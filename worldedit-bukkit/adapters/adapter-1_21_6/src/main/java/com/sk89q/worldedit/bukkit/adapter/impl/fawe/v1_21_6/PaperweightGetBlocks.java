@@ -658,15 +658,15 @@ public class PaperweightGetBlocks extends AbstractBukkitGetBlocks<ServerLevel, L
                         final LinStringTag idTag = linTag.findTag("Id", LinTagType.stringTag());
                         final LinListTag<LinDoubleTag> posTag = linTag.findListTag("Pos", LinTagType.doubleTag());
                         final LinListTag<LinFloatTag> rotTag = linTag.findListTag("Rotation", LinTagType.floatTag());
-                        if (idTag == null || posTag == null || rotTag == null) {
+                        if (idTag == null || posTag == null) {
                             LOGGER.error("Unknown entity tag: {}", nativeTag);
                             continue;
                         }
                         final double x = posTag.get(0).valueAsDouble();
                         final double y = posTag.get(1).valueAsDouble();
                         final double z = posTag.get(2).valueAsDouble();
-                        final float yaw = rotTag.get(0).valueAsFloat();
-                        final float pitch = rotTag.get(1).valueAsFloat();
+                        final float yaw = rotTag != null ? rotTag.get(0).valueAsFloat() : 0.0f;
+                        final float pitch = rotTag != null ? rotTag.get(1).valueAsFloat() : 0.0f;
                         final String id = idTag.value();
 
                         EntityType<?> type = EntityType.byString(id).orElse(null);
@@ -693,8 +693,14 @@ public class PaperweightGetBlocks extends AbstractBukkitGetBlocks<ServerLevel, L
                                     );
                                     // Unsuccessful create should not be saved to history
                                     iterator.remove();
+                                } else if (id.contains("display")) {
+                                    LOGGER.info("Successfully created display entity: {} at {},{},{}", id, x, y, z);
                                 }
+                            } else {
+                                LOGGER.warn("Failed to create entity for type: {}", id);
                             }
+                        } else {
+                            LOGGER.warn("Unknown entity type: {}", id);
                         }
                     }
                 };
